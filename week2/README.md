@@ -57,7 +57,6 @@ This week covers:
 
 
 
-
 # Day 3
 
 ## Hypothesis testing
@@ -73,7 +72,6 @@ This week covers:
   * Statistics for Hackers by VanderPlas ([slides](https://speakerdeck.com/jakevdp/statistics-for-hackers), [video](https://www.youtube.com/watch?v=Iq9DzN6mvYA))
   * See section 4 of [Mindless Statistics](http://library.mpib-berlin.mpg.de/ft/gg/GG_Mindless_2004.pdf) and [this article](https://link.springer.com/article/10.1007/s10654-016-0149-3) for some warnings on misinterpretations of p-values
 
-<!--
 
 # Day 4
 
@@ -122,10 +120,6 @@ This week covers:
   * The [modelr](https://modelr.tidyverse.org) and [tidymodels](https://github.com/tidymodels/tidymodels) packages in R
   * An animation of [gradient descent](http://jakehofman.com/gd/) and a related [blog post](https://spin.atomicobject.com/2014/06/24/gradient-descent-linear-regression/)
 
--->
-
-
-<!--
 
 
 
@@ -147,12 +141,6 @@ This week covers:
 ## References
   * Sections 3.2 and 3.3 of [Intro to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/) on regression with multiple features
 
--->
-
-
-
-
-<!--
 
 # Scratch
 
@@ -246,4 +234,3 @@ The point of this exercise is to get experience in an open-ended prediction exer
 10. Compute the RMSE between the actual and predicted trips for 2015 and compare the results to what you found with cross-validation.
 11. Pair up with a partner who has a different model, run their model, and evaluate the predictions it makes for the 2015 data.
 
--->

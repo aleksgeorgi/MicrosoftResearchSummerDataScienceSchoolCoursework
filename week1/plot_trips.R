@@ -66,6 +66,7 @@ ggplot(trips, aes(x = ymd)) +
 trips %>% group_by(ymd) %>% summarize(count = n()) %>% 
   ggplot(aes(x=ymd, y=count)) + 
   geom_line()
+  geom_histogram(bins = 365) 
 
 # plot the total number of trips (on the y 
 # axis) by age (on the x axis) and gender 
@@ -78,7 +79,6 @@ ggplot(trips, aes(x = birth_year, fill = gender)) +
   scale_y_log10(label = comma)
 
 # redo this last problem with doing grouping etc 
-  
 
 # plot the ratio of male to female trips (on the y axis) by age (on the x axis)
 # hint: use the pivot_wider() function to reshape things to make it easier to compute this ratio
@@ -136,6 +136,11 @@ weather_min_max_longer <- pivot_longer(data = weather_min_max_temp_by_day,
 ggplot(weather_min_max_longer, aes(x=DATE, y=value, color=TMP)) +
   geom_line() +
   scale_color_manual(values = c("blue", "red"))
+
+
+# plot the minimum temperature and maximum temperature (on the y axis, with different colors) over each day (on the x axis)
+# hint: try using the pivot_longer() function for this to reshape things before plotting
+# (you can skip this and come back to it tomorrow if we haven't covered reshaping data yet)
 
 
 ########################################
