@@ -76,10 +76,6 @@ This week covers:
   * Statistics for Hackers by VanderPlas ([slides](https://speakerdeck.com/jakevdp/statistics-for-hackers), [video](https://www.youtube.com/watch?v=Iq9DzN6mvYA))
   * See section 4 of [Mindless Statistics](http://library.mpib-berlin.mpg.de/ft/gg/GG_Mindless_2004.pdf) and [this article](https://link.springer.com/article/10.1007/s10654-016-0149-3) for some warnings on misinterpretations of p-values
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 3c93ecbf943aa6ed094778c8c88c924de9ba6806
 # Day 4
 
 ## Power, effect sizes, and the replication crisis
@@ -188,7 +184,7 @@ This week covers:
 
   	 * Questions 11.1 and 11.3
 
-    * ISRS 2.21, 2.23
+ i  * ISRS 2.21, 2.23
 
   * Read Chapter 2 of [Intro to Stat with Randomization and Simulation](https://www.openintro.org/stat/textbook.php) (ISRS)
   * Do these two problems:
