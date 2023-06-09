@@ -55,15 +55,7 @@ ggplot(se_data, aes(x = n, y = se)) +
   stat_function(fun=function(n) {sqrt(p * (1 - p) / n)}, linetype=2)
 ```
 
-<<<<<<< HEAD
 
-
-# stop here for day 2 
-
-
-
-=======
->>>>>>> 550c208ea0554316e43943036b39fa18161ff598
 ## Confidence intervals
 ```{r}
 set.seed(42)
