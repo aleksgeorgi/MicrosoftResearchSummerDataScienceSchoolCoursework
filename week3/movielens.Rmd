@@ -117,8 +117,8 @@ library(dplyr)
 movie_rank = ratings %>% 
   group_by(movie_id) %>% 
   summarize(mean_rating = mean(rating), num_ratings = n()) %>%
-  arrange(desc(num_ratings))%>%
-  mutate(rank = rank(desc(num_ratings)))%>%
+  arrange(desc(num_ratings)) %>%
+  mutate(rank = rank(desc(num_ratings))) %>%
   ungroup()
   
 movie_rank %>% 
