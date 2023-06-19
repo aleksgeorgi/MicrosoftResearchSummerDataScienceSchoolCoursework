@@ -49,16 +49,32 @@ Then edit the `03_download_totals.sh` file to down the `googlebooks-eng-all-tota
 
 ## Load the cleaned data
 
-Load in the `year_counts.tsv` and `total_counts.csv` files. Use the `here()` function around the filename to keep things portable.Give the columns of `year_counts.tsv` the names `term`, `year`, `volume`, and `book_count`. Give the columns of `total_counts.csv` the names `year`, `total_volume`, `page_count`, and `book_count`. Note that column order in these files may not match the examples in the documentation.
+Load in the `year_counts.tsv` and `total_counts.csv` files. 
+
+Use the `here()` function around the filename to keep things portable.
+
+Give the columns of `year_counts.tsv` the names `term`, `year`, `volume`, and `book_count`. 
+
+Give the columns of `total_counts.csv` the names `year`, `total_volume`, `page_count`, and `book_count`. 
+
+Note that column order in these files may not match the examples in the documentation.
 
 ```{r load-counts}
+year_counts <- read_delim(here("week3/ngrams/year_counts.tsv"), delim ="\t", col_names = c('term', 'year', 'volume', 'book_count'), show_col_types = FALSE)
 
+
+total_counts <- read_delim(here("week3/ngrams/total_counts.csv"), delim=",", col_names = c('year', 'total_volume', 'page_count', 'book_count'), show_col_types = FALSE)
 
 ```
 
 ## Your written answer
 
 Add a line below using Rmarkdown's inline syntax to print the total number of lines in each dataframe you've created.
+
+The total number of lines in total_counts dataframe is 
+`r nrow(total_counts)`. 
+The total number of lines in year_counts dataframe is 
+`r nrow(year_counts)`
 
 # Part B
 
@@ -69,6 +85,32 @@ Add a line below using Rmarkdown's inline syntax to print the total number of li
 Join the raw year term counts with the total counts and divide to get a proportion of mentions for each term normalized by the total counts for each year.
 
 ```{r join-years-and-totals}
+
+# “total counts” file, which you can use to convert the raw counts into proportions
+
+proportion_of_mentions <- left_join(total_counts, year_counts, by = ("year" = "year")) %>%
+  mutate(count_proportion, (total_counts$total_volume/year_counts$volume))
+
+#pick out a few terms, limit to those terms
+# divide the volume by the total volume for that year
+# and do that across all years 
+#year_counts:
+# term | year | volume 
+# "1883" | 1800 | 0 
+# "1883" | 1801 | 0 
+#  ...   | ...  | 10,000,000
+#        | 1999 |
+
+#total_volume 
+# year | total_volumes
+# 1800 | 40,000,000,000
+# 1801 | 42,000,000,000
+# ...
+
+# you want volume of "1883" /total volumes
+# so you want to left join by year with year_counts on the left and check for missing total volumes
+# because its good to onot lose that information
+# then do volume/total volume 
 
 
 ```
@@ -137,6 +179,31 @@ Write up your answer to Part E here.
 For each year term, find the year where its proportion of mentions peaks (hits its highest value). Store this in an intermediate dataframe.
 
 ```{r compute-peaks}
+
+# what that means is you're going through the graph from part B and find the max value 
+# find the dates of the peaks and the date how long it takes to get to 50% down 
+# you might get a weird noise peak in the beginning so you can filter out stuff before 
+
+# term  | year  | prop
+# "1883"  1800  0.000
+# "1883"  1881  0.001
+# ...
+# "1883" 1885   0.010
+# 
+# once you've found the peak do some filtering to pick out that row 
+# group_by(term) > fllter(prop = max(prop))
+# or you can group by term then arrange by term desc prop, then top_n(1):
+# arrange(term, desc(prop), asc(year)) %>% top_n(1)
+
+# so now we get a small dataframe of just 3 rorws
+# term  | peak_year | peak_prop
+# "1883" | 1885 | 
+# "1901" | 1913 | 
+# "1950" | 1956  | 
+
+# so now we need to join that table on term with ngrams_years
+# to do the half life part and return the row that is <= to the peak/2
+
 
 ```
 

@@ -52,21 +52,9 @@ ratings %>%
 # aggregate ratings by movie, computing mean rating and number of ratings
 # hint: use the n() function for easy counting within a group
 
-
-aggregate_movie <- ratings %>% 
-  group_by(movie_id) %>% 
-  summarize(count_ratings = n()) 
-
-mean_rating_table <- ratings %>% 
-  group_by(movie_id) %>% 
-  mutate(mean_rating = mean(rating)) 
-
-#removing the duplicate movie_id's in order to keep just one mean per movie_id
-mean_rating_table <- distinct(mean_rating_table, movie_id, .keep_all = TRUE)
-
-#join on movie_id and dropping unneeded rows
-aggregate_ratings_by_movie <- merge(mean_rating_table, aggregate_movie) %>% 
-  select(-2,-3,-4)
+ratings_by_movie <- ratings %>%
+  group_by(movie_id) %>%
+  summarize(mean_rating=mean(rating), count=n())
 
 
 ```
@@ -88,12 +76,15 @@ ratings %>%
 # plot distribution of mean ratings by movie https://speakerdeck.com/jhofman/modeling-social-data-lecture-2-introduction-to-counting?slide=28
 # hint: try geom_histogram and geom_density
 
-aggregate_ratings_by_movie %>% 
+library(dplyr)
+
+
+ratings_by_movie %>% 
   ggplot(aes(x = mean_rating)) +
   geom_histogram() + 
   labs(x = "mean rating per movie")
   
-aggregate_ratings_by_movie %>% 
+ratings_by_movie %>% 
   ggplot(aes(x = mean_rating)) + 
   geom_density(fill = "black") + 
   labs(x = "mean rating per movie")
@@ -110,22 +101,18 @@ aggregate_ratings_by_movie %>%
 # plot the CDF of movie popularity
 
 
+#movie_rank contains the results of the most popular movies 
+ratings_by_movie <- ratings_by_movie %>%
+  arrange(desc(count)) %>%
+  mutate(rank = rank(desc(count))) %>%
+  mutate(csum = cumsum(count)) %>%
+  mutate(cdf = csum/nrow(ratings))
 
-library(dplyr)
-
- 
-movie_rank = ratings %>% 
-  group_by(movie_id) %>% 
-  summarize(mean_rating = mean(rating), num_ratings = n()) %>%
-  arrange(desc(num_ratings)) %>%
-  mutate(rank = rank(desc(num_ratings))) %>%
-  ungroup()
-  
-movie_rank %>% 
-  mutate(frac_ratings = cumsum(num_ratings)/sum(num_ratings))%>%
-  ggplot(aes(x = rank,y = frac_ratings))+
-  geom_line()
-
+ratings_by_movie %>%
+  ggplot(aes(x = rank, y = cdf)) +
+    geom_line() +
+  scale_y_continuous(labels = scales::percent_format()) + 
+  labs(x = "Rank", y = "Fraction of Ratings")
 
 ```
 
@@ -135,7 +122,7 @@ movie_rank %>%
 ```{r aggregate-by-user}
 # aggregate ratings by user, computing mean and number of ratings
 
-rating_by_users = ratings %>%
+ratings_by_user = ratings %>%
   group_by(user_id) %>%
   summarize(mean_ratings = mean(rating),count = n())
 
@@ -145,12 +132,10 @@ rating_by_users = ratings %>%
 # plot distribution of user activity (= number of ratings the user made)
 # hint: try a log scale here
 
-ratings %>%
-  group_by(user_id) %>%
-  summarize(mean_ratings = mean(rating),count = n()) %>%
-  ggplot(aes(x = count))+
+ratings_by_user %>%
+  ggplot(aes(x = count)) +
+  geom_histogram(color = 'black', fill = 'lightblue')+
   scale_x_log10()+
-  geom_histogram()+
   ylab("Count")+
   xlab("User activity")
 
@@ -188,32 +173,37 @@ ratings %>%
 # if you had an inventory of size 9, you'd satisfy 1+2 =3 users 
 # to satisfy everyone you have to get the top 1003 movies to satisfy everybody in this list
 
-#the following is Jerry's solution:
-df=full_join(movie_rank,ratings,by="movie_id")#outer join movie_rank and ratings df
-ranks=c(10,100,500,1000,2000,3000,4000,5000,10000,12000,14000,15000)
-pops=rep(0,length(ranks))
-users_len=length(rating_by_users$user_id)
 
-df_t=df %>% group_by(user_id) %>%summarize(q90=quantile(rank,0.9),q100=quantile(rank,1))
-percents90=rep(0,length(seq(1,20000,10)))
-percents100=rep(0,length(seq(1,20000,10)))
-j=1
+ratings_by_user_10 <- ratings_by_user %>%
+  filter(count >= 10)
 
-for (k in seq(1,20000,10)){
-  percents90[j]=unlist((df_t%>%filter(k>=q90)%>%count())[1])
-  percents100[j]=unlist((df_t%>%filter(k>=q100)%>%count())[1])
-  j=j+1
-}
+ratings_10 <- left_join(ratings_by_user_10, ratings, by="user_id")
 
-percents90=percents90/length(rating_by_users$user_id)
-percents100=percents100/length(rating_by_users$user_id)
+ratings_10 <- left_join(ratings_10, ratings_by_movie, by = "movie_id")
 
-df_g=data.frame(seq(1,20000,10),percents90,percents100)
-names(df_g)=c("ranks","pers90","pers100")
-ggplot(df_g,aes(x=ranks,y=pers90))+geom_line()+
-  geom_line(aes(x=ranks,y=pers100))+
-  xlab("inventory size")+
-  ylab("percent of users satisfied")
+rank_user_movie <- ratings_10 %>%
+  transmute(user_id, movie_id, rank)
+
+user_satisfaction <- rank_user_movie %>%
+  group_by(user_id) %>%
+  summarize(satisfied_100 = max(rank), satisfied_90 = quantile(rank, 0.9)) %>%
+  arrange(desc(satisfied_100))
+
+
+count_satisfaction_100 <- user_satisfaction %>%
+  group_by(satisfied_100) %>%
+  summarize(count = n()) %>%
+  mutate(cumsum(count), sum(count), percent_satisfied = cumsum(count) / sum(count))
+  
+
+count_satisfaction_90 <- user_satisfaction %>%
+  group_by(satisfied_90) %>%
+  summarize(count = n()) %>%
+  mutate(cumsum(count), sum(count), percent_satisfied = cumsum(count) / sum(count))
+
+ggplot() +
+  geom_line(aes(x = satisfied_100, y = percent_satisfied), data = count_satisfaction_100) +
+  geom_line(aes(x = satisfied_90, y = percent_satisfied), data = count_satisfaction_90)
 
 
 ```
