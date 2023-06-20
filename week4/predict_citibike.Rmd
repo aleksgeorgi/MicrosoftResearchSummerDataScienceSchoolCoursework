@@ -418,6 +418,29 @@ ggplot(plot_data_best, aes(x = pred, y = num_trips)) +
   scale_y_continuous()
 
 ```
+```{r, testing on test data}
+
+
+model_test <- lm(num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax, data = trips_per_day_holiday_test)
+
+model_test_RMSE <- c()
+model_test_R2 <- c()
+
+# MSE formula: 
+model_test_MSE <- mean((predict(model_test, trips_per_day_holiday_test) - trips_per_day_holiday_test$num_trips)^2)
+  
+# evaluate and store RMSE validation data:
+model_test_RMSE <- sqrt(model_test_MSE)
+  
+# evaluate and store R^2 validate data
+model_test_R2 <- (1-(model_test_RMSE/var(trips_per_day_holiday_test$num_trips)))
+
+
+model_test_RMSE
+model_test_R2
+
+```
+
 7. When you're convinced that you have your best model, clean up all your code so that it saves your best model in a ``.RData`` file using the `save` function.
 
 ```{r, saving best model}
@@ -430,3 +453,32 @@ save(model_best, file = "model_best.RData")
 8. Commit all of your changes to git, using ``git add -f`` to add the model ``.Rdata`` file if needed, and push to your Github repository.
 
 9. Finally, use the model you just developed and pushed to Github to make predictions on the 10% of data you kept aside as a test set. Do this only once, and record the performance in your Rmarkdown file. Use this number to make a guess as to how your model will perform on future data (which we'll test it on!). Do you think it will do better, worse, or the same as it did on the 10% test set you used here? Write your answer in your Rmarkdown notebook. Render the notebook and push the final result to Github.
+
+
+
+
+```{r, testing on 2015 data}
+
+# need to get citibike data on 2015 and join the following 2015 dataset then run the model
+
+trips_per_day_2015 <- read_csv(here("week4/weather_2015.csv"), show_col_types = FALSE)
+
+model_test_2015 <- lm(num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax, data = trips_per_day_2015)
+
+model_test_RMSE_2015 <- c()
+model_test_R2_2015 <- c()
+
+# MSE formula: 
+model_test_MSE_2015 <- mean((predict(model_test_2015, trips_per_day_2015) - trips_per_day_2015$num_trips)^2)
+  
+# evaluate and store RMSE validation data:
+model_test_RMSE_2015 <- sqrt(model_test_MSE_2015)
+  
+# evaluate and store R^2 validate data
+model_test_R2_2015 <- (1-(model_test_RMSE_2015/var(trips_per_day_2015$num_trips)))
+
+
+model_test_RMSE_2015
+model_test_R2_2015
+```
+
