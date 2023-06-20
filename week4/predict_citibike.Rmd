@@ -1,0 +1,432 @@
+---
+title: "predict_citibike"
+author: "Aleksandra Georgievska"
+date: "2023-06-19"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(scales)
+library(tidyverse)
+library(readr)
+library(modelr)
+
+theme_set(theme_bw())
+
+options(repr.plot.width=4, repr.plot.height=3)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Description
+
+## Day 1 - Predicting daily Citibike trips (open-ended)
+
+- The point of this exercise is to get experience in an open-ended prediction exercise: predicting the total number of Citibike trips taken on a given day. 
+
+- Create an RMarkdown file named `predict_citibike.Rmd` and do all of your work in it.
+
+- The rules of the game are broken into sections 1-9:
+
+1. Use the `trips_per_day.tsv` file that has one row for each day, the number of trips taken on that day, and the minimum temperature on that day.
+
+```{r, loading and cleaning datasets}
+
+#loading the citibike data set
+trips_per_day <- read_tsv(here("week4/trips_per_day.tsv"), show_col_types = FALSE)
+
+# adding holiday dates to trips_per_day dataset
+holiday_dates <- read_csv(here("week4/USBank_holidays"), col_names = c('row', 'ymd', 'holiday'), show_col_types = FALSE)
+
+# drop the first column which contains row numbers
+holiday_dates <- holiday_dates[, -1]
+
+# filter holiday_dates for dates in 2014
+holiday_dates <- holiday_dates %>%
+  filter(year(ymd) == 2014)
+
+# left join
+trips_per_day_holiday <- trips_per_day %>%
+  left_join(holiday_dates, by = c("ymd" = "ymd"))
+
+# rename the column 
+trips_per_day_holiday <- trips_per_day_holiday %>%
+  rename(holiday_name = holiday)
+
+# create new boolean column to mark if holiday T/F
+trips_per_day_holiday <- trips_per_day_holiday %>%
+  mutate(holiday_bool = ifelse(is.na(holiday_name), 0, 1))
+
+# One hot encoding of holidays 
+trips_per_day_holiday <- trips_per_day_holiday %>%
+  mutate(row_id = row_number()) %>%
+  pivot_wider(names_from = holiday_name, values_from = holiday_name, values_fn = length) %>%
+  select(-row_id)
+
+#drop the column titled "NA"
+trips_per_day_holiday <- trips_per_day_holiday %>%
+  select(-"NA")
+
+trips_per_day_holiday <- trips_per_day_holiday %>%
+  rename_all(~tolower(gsub(" ", "_", .)))
+
+head(trips_per_day_holiday)
+
+```
+
+2. Split the data into randomly selected training, validation, and test sets, with 90% of the data for training and validating the model, and 10% for a final test set (to be used once and only once towards the end of this exercise). 
+
+- You can adapt the code from last week's [complexity control notebook](../week3/complexity_control.ipynb) to do this. 
+
+- When comparing possible models, you can use a single validation fold or k-fold cross-validation if you'd like a more robust estimate.
+
+```{r splitting for cross validation + and testing set}
+
+set.seed(42)
+
+# get the number of rows in the data set
+num_days <- nrow(trips_per_day_holiday)
+
+# set 80% for training 
+frac_train <- 0.8
+num_train <- floor(num_days*frac_train)
+
+# randomly sample rows for training set
+ndx <- sample(1:num_days, num_train, replace=F)
+
+# use this data for model training (fitting)
+trips_per_day_holiday_train <- trips_per_day_holiday[ndx, ]
+
+# split the remaining 20%, 50/50 for validation and testing
+trips_per_day_holiday_20 <- trips_per_day_holiday[-ndx, ]
+num_days_20 <- nrow(trips_per_day_holiday_20)
+frac_val <- 0.5
+num_val <- floor(num_days_20*frac_val)
+ndx20 <- sample(1:num_days_20, num_val, replace=F)
+trips_per_day_holiday_val <- trips_per_day_holiday_20[ndx20, ]
+
+# save the remaining 10% as a testing data set 
+trips_per_day_holiday_test <- trips_per_day_holiday_20[-ndx20, ]
+
+```
+
+Spliting the dataset for k-fold validation
+
+```{r merging training and validation set for K-fold testing}
+
+#combines both data sets, one after the other
+trips_per_day_holiday_fold <- rbind(trips_per_day_holiday_train, trips_per_day_holiday_val)
+
+```
+
+```{r, distribution of trips}
+
+
+#plotting just the distribution of trips 
+ggplot(trips_per_day_holiday_train, aes(x=num_trips)) + geom_histogram()
+
+```
+
+
+3. Start out with the model in that notebook, which uses only the minimum temperature on each day to predict the number of trips taken that day. 
+
+- Try different polynomial degrees in the minimum temperature and check that you get results similar to what's in that notebook, although they likely won't be identical due to shuffling of which days end up in the train, and validation splits. 
+
+- Quantify your performance using [root mean-squared error](https://www.kaggle.com/wiki/RootMeanSquaredError).
+
+```{r polymodel on min temp}
+
+# Evaluate models from degree 1 up through degree 8. 
+# For each we'll fit on the training data and evaluate on the validation data
+
+K <- 1:8
+train_err <- c()
+validate_err <- c()
+
+for (k in K) {
+  # fit the model with the training data
+  model_tmin <- lm(num_trips ~ poly(tmin, k, raw=T), data = trips_per_day_holiday_train)
+  
+  # evaluate RMSE on training data
+  train_err[k] <- sqrt(mean((predict(model_tmin, trips_per_day_holiday_train) - trips_per_day_holiday_train$num_trips)^2))
+  
+  # evaluate RMSE on the validate data
+  validate_err[k] <- sqrt(mean((predict(model_tmin, trips_per_day_holiday_val) - trips_per_day_holiday_val$num_trips)^2))
+}
+
+
+#-------------------------------------------------------
+#plot the training and validation error as a function of the polynomial degree.
+plot_data <- data.frame(K, train_err, validate_err) %>%
+  gather("split", "error", -K)
+
+ggplot(plot_data, aes(x=K, y=error, color=split)) +
+  geom_line() +
+  scale_x_continuous(breaks=K) +
+  xlab('Polynomial Degree') +
+  ylab('RMSE')
+
+```
+
+```{r refitting tmin model with all data}
+# fitting a new model with all data to visualize the results
+model_tmin_poly4 <- lm(num_trips ~ poly(tmin, 4, raw = T), data = trips_per_day_holiday_train)
+
+trips_per_day_holiday_train <- trips_per_day_holiday_train %>%
+  add_predictions(model_tmin_poly4) %>%
+  mutate(split = "train")
+
+trips_per_day_holiday_val <- trips_per_day_holiday_val %>%
+  add_predictions(model_tmin_poly4) %>%
+  mutate(split = "validate")
+
+plot_data <- bind_rows(trips_per_day_holiday_train, trips_per_day_holiday_val)
+
+ggplot(plot_data, aes(x = tmin, y = num_trips)) +
+  geom_point(aes(color = split)) +
+  geom_line(aes(y = pred)) +
+  xlab('Minimum temperature') +
+  ylab('Daily trips') +
+  scale_y_continuous()
+
+```
+
+4. Now get creative and extend the model to improve it. 
+
+- You can use any features you like that are available prior to the day in question, ranging from the weather, to the time of year and day of week, to activity in previous days or weeks, but don't cheat and use features from the future (e.g., the next day's trips). 
+
+- You can even try adding [holiday](https://gist.github.com/shivaas/4758439) effects. 
+
+- You might want to look at feature distributions to get a sense of what tranformations (e.g., ``log`` or manually created factors such as weekday vs. weekend) might improve model performance. 
+
+- You can also interact features with each other. This [formula syntax in R](https://cran.r-project.org/doc/manuals/R-intro.html#Formulae-for-statistical-models) reference might be useful.
+
+
+```{r model improvement - testing holidays}
+
+# plot the data with the added holidays
+ggplot(trips_per_day_holiday_train, aes(x = tmin, y = num_trips)) +
+  geom_point(aes(color = holiday_bool)) +
+  #geom_line(aes(y = pred, linetype = (prcp >0))) +
+  geom_line(aes(y = pred)) +
+  xlab('Minimum temperature') +
+  ylab('Daily trips') +
+  scale_y_continuous()
+
+# at first glance it looks like the model over-estimates on holidays for all except 2. 
+
+```
+
+
+```{r looking at all the holidays and all the data}
+
+# left join on original data frame
+trips_per_day_holiday_full <- trips_per_day %>%
+  left_join(holiday_dates, by = c("ymd" = "ymd"))
+
+# rename the column
+trips_per_day_holiday_full <- trips_per_day_holiday_full %>%
+  rename(holiday_name = holiday)
+
+# create new boolean column to mark if holiday T/F
+trips_per_day_holiday_full <- trips_per_day_holiday_full %>%
+  mutate(holiday_bool = ifelse(is.na(holiday_name), 0, 1))
+
+# plot all the 2014 data including the holidays to see where the holidays fall 
+ggplot(trips_per_day_holiday_full, aes(x = tmin, y = num_trips)) +
+  geom_point(aes(color = holiday_bool)) +
+  geom_smooth(method="lm", se=FALSE, color = "red") +
+  xlab('Minimum temperature') +
+  ylab('Daily trips') +
+  scale_y_continuous()
+  
+
+```
+
+## Observation on Holidays vs Temp:
+Roughly looks like holiday dates are plotting lower daily trips relative to non-holiday temperature predictions, but since there are so few holidays in the year, it could lead to overfitting. Will explore holiday interactions with other features.
+
+
+5. Try a bunch of different models and ideas, documenting them in your Rmarkdown file. Inspect the models to figure out what the highly predictive features are, and see if you can prune away any negligble features that don't matter much. Report the model with the best performance on the validation data. Watch out for overfitting.
+
+```{r, testing feature interactions & cross validation}
+
+model_equations = c("num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax",
+                    "num_trips ~ (tmin*(prcp>0)*(snwd>0))*tmax",
+                    "num_trips ~ (tmin+(prcp>0)+(snwd>0))*tmax",
+                    "num_trips ~ (tmin+(prcp>0)+(snwd>0))+tmax",
+                    "num_trips ~ tmin+(prcp>0)+(snow>0)",
+                    "num_trips ~ tmin+(prcp>0)",
+                    "num_trips ~ tmin*(prcp>0)")
+                    # "num_trips ~ poly(tmin, 4, raw = T)+holiday_bool", 
+                    # "num_trips ~ poly(tmin, 4, raw = T)*holiday_bool", 
+                    # "num_trips ~ poly(tmin, 4, raw = T)*holiday_bool*prcp", 
+                    # "num_trips ~ tmin*prcp",
+                    # "num_trips ~ tmin*(prcp>0)*(snow>0)",
+                    # "num_trips ~ tmin+(prcp>0)+(snwd>0)",
+                    # "num_trips ~ tmin+prcp+snwd",
+                    # "num_trips ~ tmax*tmin",
+                    # "num_trips ~ tmax+tmin",
+                    # "num_trips ~ tmin*(prcp>0.3)",
+                    # "num_trips ~ tmin+(prcp>0.3)",
+                    # "num_trips ~ tmin*(prcp>0.5)",
+                    # "num_trips ~ tmin+(prcp>0.5)",
+                    # "num_trips ~ tmin*(prcp>0)*snow",
+                    # "num_trips ~ tmin*(prcp>0) + holiday_bool",
+                    # "num_trips ~ tmin+prcp",
+                    # "num_trips ~ poly(tmin, 4, raw = T) + prcp"
+                    # "num_trips ~ tmin*(prcp>0)*holiday_bool",
+                    # "num_trips ~ prcp",
+                    # "num_trips ~ tmin*(prcp>0)*thanksgiving_day",
+                    # "num_trips ~ tmin*(prcp>0)*veterans_day",
+                    # "num_trips ~ poly(tmin, 4, raw = T) + prcp*holiday_bool")
+
+M <- length(model_equations)
+val_RMSE <- numeric(M)
+val_R2 <- numeric(M)
+
+for (m in 1:M) {
+  model <- lm(model_equations[m], data = trips_per_day_holiday_train)
+  
+  # MSE formula: 
+   MSE <- mean((predict(model, trips_per_day_holiday_val) - trips_per_day_holiday_val$num_trips)^2)
+  
+  # evaluate and store RMSE validation data:
+  val_RMSE[m] <- sqrt(MSE)
+  
+  # evaluate and store R^2 validate data
+  val_R2[m] <- (1-(MSE/var(trips_per_day_holiday_train$num_trips)))
+  
+}#end for
+
+#combine results into table for inspection
+model_equations_results <- data.frame(model_equations, val_RMSE, val_R2)
+
+```
+
+
+
+TODO:
+Code is roughly thrown together. Need to comb through and make sure works
+```{r, best models & k-fold testing}
+
+# Jakes Comments:
+# after doing k fold testing, you get an avg validation error. More code but better estimate on performance. k fold testing will be done on 90% of the data since 10% is held out for testing. need to resplit 90/10 for k-fold testing 
+
+# When you're done playing with all the testing and you have the model you want to stick with, retrain the model on all the 90% data once you're done modifying features
+ 
+
+
+
+# model_equations_fold = c("num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax",
+#                     "num_trips ~ (tmin*(prcp>0)*(snwd>0))*tmax",
+#                     "num_trips ~ (tmin+(prcp>0)+(snwd>0))*tmax",
+#                     "num_trips ~ (tmin+(prcp>0)+(snwd>0))+tmax",
+#                     "num_trips ~ tmin+(prcp>0)+(snow>0)",
+#                     "num_trips ~ tmin+(prcp>0)",
+#                     "num_trips ~ tmin*(prcp>0)")
+# 
+# M_fold <- length(model_equations_fold)
+# val_RMSE_fold <- numeric(M)
+# val_R2_fold <- numeric(M)
+# 
+# seed(42)
+# 
+# num_train_fold <- floor(nrow(trips_per_day_holiday_fold)*0.8)
+# 
+# num_folds <- 5
+# 
+# num_days_fold <- nrow(trips_per_day_holiday_fold)
+# 
+# ndx_fold <- sample(1:num_days_fold, num_train_fold, replace=F)
+# 
+# trips_per_day_holiday_fold <- trips_per_day_holiday_fold[ndx_fold, ] %>%
+#   mutate(fold = (row_number() %%
+#                    num_folds) + 1)
+# 
+# for (m in 1:M_fold) {
+# 
+#   # do 5-fold cross-validation within each value of m
+#   validate_err_fold <- c()
+#   
+#   for (f in 1:num_folds) {
+#     # fit on the training data
+#     trips_per_day_holiday_fold_train <- filter(trips_per_day_holiday_fold, fold != f)
+#     
+#     model_fold <- lm(model_equations_fold[m], data=trips_per_day_holiday_fold_train)
+# 
+#     # evaluate on the validation data
+#     trips_per_day_val_fold <- filter(trips_per_day_holiday_fold, fold == f)
+#     
+#     # MSE formula: 
+#     MSE_fold <- mean((predict(model_equations_fold, trips_per_day_holiday_val) - trips_per_day_holiday_val$num_trips)^2)
+#   
+#     # evaluate and store RMSE validation data:
+#     val_RMSE_fold[m] <- sqrt(MSE_fold)
+#     
+#     # evaluate and store R^2 validate data
+#     val_R2_fold[m] <- (1-(MSE_fold/var(trips_per_day_holiday_train$num_trips)))
+#   }
+# 
+#   # compute the average validation error across folds
+#   # and the standard error on this estimate
+#   avg_validate_err[k] <- mean(validate_err)
+#   se_validate_err[k] <- sd(validate_err) / sqrt(num_folds)
+#   
+# }#end for
+# 
+# #combine results into table for inspection
+# model_equations_results_fold <- data.frame(model_equations_fold, val_RMSE_fold, val_R2_fold)
+
+```
+
+6. Plot your final best fit model in two different ways. First with the date on the x-axis and the number of trips on the y-axis, showing the actual values as points and predicted values as a line.
+
+```{r, plotting best results}
+
+model_best <- lm(num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax, data = trips_per_day_holiday_train)
+
+trips_per_day_holiday_train_best <- trips_per_day_holiday_train %>%
+  add_predictions(model_best) %>%
+  mutate(split = "train")
+
+trips_per_day_holiday_val_best <- trips_per_day_holiday_val %>%
+  add_predictions(model_best) %>%
+  mutate(split = "validate")
+
+plot_data_best <- bind_rows(trips_per_day_holiday_train_best, trips_per_day_holiday_val_best)
+
+ggplot(plot_data_best, aes(x = date, y = num_trips)) +
+  geom_point(aes(color = split)) +
+  geom_line(aes(y = pred)) +
+  xlab('Date') +
+  ylab('Daily trips') +
+  scale_y_continuous()
+```
+Second as a plot where the x-axis is the predicted value and the y-axis is the actual value, with each point representing one day.
+
+```{r, residual plots}
+ggplot(plot_data_best, aes(x = pred, y = num_trips)) +
+  geom_point(aes(color = split)) +
+  geom_line(aes(y = pred)) +
+  xlab('Predicted Trips') +
+  ylab('Daily trips') +
+  scale_y_continuous()
+
+```
+7. When you're convinced that you have your best model, clean up all your code so that it saves your best model in a ``.RData`` file using the `save` function.
+
+```{r, saving best model}
+
+save(model_best, file = "model_best.RData")
+
+
+```
+
+8. Commit all of your changes to git, using ``git add -f`` to add the model ``.Rdata`` file if needed, and push to your Github repository.
+
+9. Finally, use the model you just developed and pushed to Github to make predictions on the 10% of data you kept aside as a test set. Do this only once, and record the performance in your Rmarkdown file. Use this number to make a guess as to how your model will perform on future data (which we'll test it on!). Do you think it will do better, worse, or the same as it did on the 10% test set you used here? Write your answer in your Rmarkdown notebook. Render the notebook and push the final result to Github.
