@@ -2,8 +2,7 @@
 #
 # add your solution after each of the 10 comments below
 #
-
-# count the number of unique stations
+/bin/bash: line 1: :wq: command not found
 cut -d, -f4,8 201402-citibike-tripdata.csv | tr ',' '\n' | sort | uniq | wc -l
 
 # count the number of unique bikes

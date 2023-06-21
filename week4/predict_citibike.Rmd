@@ -461,24 +461,76 @@ save(model_best, file = "model_best.RData")
 
 # need to get citibike data on 2015 and join the following 2015 dataset then run the model
 
-trips_per_day_2015 <- read_csv(here("week4/weather_2015.csv"), show_col_types = FALSE)
 
-model_test_2015 <- lm(num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax, data = trips_per_day_2015)
+# load each month of the trip data into one big data frame
+csvs <- Sys.glob('*-tripdata.csv')
+trips <- data.frame()
+for (csv in csvs) {
+  print(csv)
+  tmp <- read_csv(csv, na='\\N')
 
-model_test_RMSE_2015 <- c()
-model_test_R2_2015 <- c()
+  # the date format changed to something ugly in 2015-09 which read_csv doesn't recognize as a datetime,
+  # so manually convert the date from a string to a datetime
+  if (typeof(tmp$starttime) == "character")
+    tmp <- mutate(tmp,
+                  starttime=parse_datetime(starttime, "%m/%d/%Y %H:%M"),
+                  stoptime=parse_datetime(stoptime, "%m/%d/%Y %H:%M"))
 
-# MSE formula: 
-model_test_MSE_2015 <- mean((predict(model_test_2015, trips_per_day_2015) - trips_per_day_2015$num_trips)^2)
-  
-# evaluate and store RMSE validation data:
-model_test_RMSE_2015 <- sqrt(model_test_MSE_2015)
-  
-# evaluate and store R^2 validate data
-model_test_R2_2015 <- (1-(model_test_RMSE_2015/var(trips_per_day_2015$num_trips)))
+  trips <- rbind(trips, tmp)
+}
+
+# replace spaces in column names with underscores
+names(trips) <- gsub(' ', '_', names(trips))
+
+# add a column for year/month/day (without time of day)
+trips <- mutate(trips, ymd=as.Date(starttime))
+
+# recode gender as a factor 0->"Unknown", 1->"Male", 2->"Female"
+trips <- mutate(trips, gender=factor(gender, levels=c(0,1,2), labels=c("Unknown","Male","Female")))
 
 
-model_test_RMSE_2015
-model_test_R2_2015
+########################################
+# load and clean weather data
+########################################
+
+# load weather data from belvedere tower in central park
+# https://www.ncei.noaa.gov/orders/cdo/2992179.csv
+# ordered from
+# http://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USW00094728/detail
+weather_2015 <- read.table('weather_2015.csv', header=T, sep=',')
+
+# extract just a few columns, lowercase column names, and parse dates
+weather_2015 <- select(weather_2015, DATE, PRCP, SNWD, SNOW, TMAX, TMIN)
+names(weather_2015) <- tolower(names(weather_2015))
+weather <- mutate(weather_2015,
+                  ymd = as.Date(parse_datetime(date, "%Y-%m-%d")))
+weather_2015 <- tbl_df(weather_2015)
+
+# save data frame for easy loading in the future
+save(trips, weather_2015, file='trips_2015.RData')
+
+
+
+#------------------------------------
+
+
+# 
+# model_test_2015 <- lm(num_trips ~ (tmin*(prcp>0)+(snwd>0))*tmax, data = trips_per_day_2015)
+# 
+# model_test_RMSE_2015 <- c()
+# model_test_R2_2015 <- c()
+# 
+# # MSE formula: 
+# model_test_MSE_2015 <- mean((predict(model_test_2015, trips_per_day_2015) - trips_per_day_2015$num_trips)^2)
+#   
+# # evaluate and store RMSE validation data:
+# model_test_RMSE_2015 <- sqrt(model_test_MSE_2015)
+#   
+# # evaluate and store R^2 validate data
+# model_test_R2_2015 <- (1-(model_test_RMSE_2015/var(trips_per_day_2015$num_trips)))
+# 
+# 
+# model_test_RMSE_2015
+# model_test_R2_2015
 ```
 

@@ -202,7 +202,8 @@ For each year term, find the year where its proportion of mentions peaks (hits i
 # "1950" | 1956  | 
 
 # so now we need to join that table on term with ngrams_years
-# to do the half life part and return the row that is <= to the peak/2
+# to do the half life part and return the row that is prop <= to the peak/2, and take the first yera where that happens: 
+# filter(prop <= peak/2) %>% top_n(1, year)
 
 
 ```
