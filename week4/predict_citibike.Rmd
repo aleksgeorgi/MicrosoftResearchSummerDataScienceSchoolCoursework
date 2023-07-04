@@ -13,6 +13,8 @@ library(scales)
 library(tidyverse)
 library(readr)
 library(modelr)
+library(ggplot2)
+library(dplyr)
 
 theme_set(theme_bw())
 
@@ -506,9 +508,31 @@ weather <- mutate(weather_2015,
                   ymd = as.Date(parse_datetime(date, "%Y-%m-%d")))
 weather_2015 <- tbl_df(weather_2015)
 
-# save data frame for easy loading in the future
-save(trips, weather_2015, file='trips_2015.RData')
+```
 
+
+
+```{r, join trips and weather, trips_per_day}
+
+# Convert "starttime" column to date format and save it in "ymd" column
+trips$ymd <- as.Date(trips$starttime)
+weather_2015$date <- as.Date(weather_2015$date)
+
+trips_per_day_2015 <- trips %>% group_by(ymd) %>% mutate(count=n())
+
+colnames(trips_per_day_2015)
+colnames(weather_2015)
+
+trips_per_day_2015 <- left_join(weather_2015, trips_per_day_2015, by = c('date' = 'ymd'))
+
+
+
+# # Convert "starttime" column to date format
+# weather_2015$ymd <- as.Date(weather_2015$starttime, format = "%Y-%m-%d")
+# 
+# # Count occurrences per date and create a new column called "count"
+# weather_2015 <- transform(weather_2015, count = ave(seq_along(ymd), ymd, FUN = length))
+# 
 
 
 #------------------------------------
