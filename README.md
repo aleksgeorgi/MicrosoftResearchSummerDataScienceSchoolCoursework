@@ -7,4 +7,4 @@ This is the shared repository for Microsoft Research NYC's 2023 Data Science Sum
 - [Week 3](week3/): Extended assignments
 - [Week 4](week4/): Projects
 
-<img style="margin: 10px" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/DensityPlot.png" alt="Linux" height="250" />
+<img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/DensityPlot.png" alt="DensityPlot" />
