@@ -38,11 +38,11 @@ The world map also varied from that of the author's because our map was built us
 
 Replicate the relative change panel of Figure 3B. Build a simplified model trained on the lockdown months for the 3 years prior to 2020 to create the benchmark data.
 
-Figure 3B - Relative Change, Our Recreation:
-<img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/RelativeChange.png" alt="Relative Change" />
-
 Figure 3B - Paper Figure:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/Paper_Figure3B.png" alt="Relative Change" />
+
+Figure 3B - Relative Change, Our Recreation:
+<img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/RelativeChange.png" alt="Relative Change" />
 
 ### Task 2 Results:
 
