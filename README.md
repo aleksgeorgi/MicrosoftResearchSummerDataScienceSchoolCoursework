@@ -13,7 +13,7 @@ Figure 1:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/DensityPlot.png" alt="DensityPlot" />
 
 Figure 2:
-<img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/WoldMap.png" alt="WorldMap" />
+<img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/WoldMap.png" alt="WorldMap" />
 
 Figure 3B - Recreation:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/RelativeChange.png" alt="Relative Change" />
