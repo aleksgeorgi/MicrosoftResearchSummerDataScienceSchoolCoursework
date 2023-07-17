@@ -20,17 +20,10 @@ Here are the rules of the game:
 8. Commit all of your changes to git, using `git add -f` to add the model `.Rdata` file if needed, and push to your Github repository.
 9. Finally, use the model you just developed and pushed to Github to make predictions on the 10% of data you kept aside as a test set. Do this only once, and record the performance in your Rmarkdown file. Use this number to make a guess as to how your model will perform on future data (which we'll test it on!). Do you think it will do better, worse, or the same as it did on the 10% test set you used here? Write your answer in your Rmarkdown notebook. Render the notebook and push the final result to Github.
 
-<<<<<<< HEAD
-
-# <!--
-
-> > > > > > > 4b734739a5236906bb9c364f91999e1c7cb59a11
-
 # Day 2
 
 ## Testing your Citibike models
 
-<<<<<<< HEAD
 Now you're going to test the model you developed yesterday using trips from 2014 with data from 2015 and 2020.
 
 1. First you'll need to get data for 2015. Make a copy of the the [download_trips.sh](../week1/download_trips.sh) script from week 1 here and modify it to download all trips from 2015. You can call it `download_trips_2015.sh`.
