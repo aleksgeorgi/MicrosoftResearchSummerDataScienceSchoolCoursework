@@ -1,0 +1,291 @@
+---
+title: "Microsoft DS3 - Final Project"
+author: "Aleksandra Georgievska"
+date: "2023-06-20"
+output:
+  html_document: default
+  pdf_document: default
+teammates: Aleksandra Georgievska and Jerry Chen
+team: group6
+---
+
+```{r, import}
+library(here)
+library(scales)
+library(tidyverse)
+library(readr)
+library(modelr)
+library(ggplot2)
+library(dplyr)
+
+theme_set(theme_bw())
+
+options(repr.plot.width=4, repr.plot.height=3)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+<!-- # Import the data -->
+
+```{r setup, include=FALSE}
+city_day_agg_cleaned <- read_csv(gzfile("data/city_day_agg_cleaned.csv.gz"), 
+                                 show_col_types = FALSE)
+
+country_day_agg_cleaned <- read_csv(gzfile("data/country_day_agg_cleaned.csv.gz"), 
+                                    show_col_types = FALSE)
+
+openaq_cities <- read_csv("data/openaq_cities.csv", show_col_types = FALSE)
+```
+
+# Cleaning the Data
+
+```{r, cleaning data}
+
+
+# -----------data cleaning & exploration-----------------
+
+unique(city_day_agg_cleaned$parameter) #  [1] "no2"  "o3"   "pm25"
+
+unique(year(city_day_agg_cleaned$date)) # [1] 2017 2018 2019 2020
+
+unique(year(country_day_agg_cleaned$date)) # [1] 2017 2019 2020 2018
+
+# removing rows that are !pm25
+city_day_agg_cleaned <- city_day_agg_cleaned[city_day_agg_cleaned$parameter == "pm25", ]
+
+country_day_agg_cleaned <- country_day_agg_cleaned[country_day_agg_cleaned$parameter == "pm25", ]
+
+# removing months aside from January-May
+city_day_agg_cleaned <- city_day_agg_cleaned %>%
+  filter(substr(date, 6, 7) %in% c("01", "02", "03", "04", "05"))
+
+country_day_agg_cleaned <- country_day_agg_cleaned %>%
+  filter(substr(date, 6, 7) %in% c("01", "02", "03", "04", "05"))
+
+
+#partition the data set 2020 and !2020
+#by city
+city_day_agg_cleaned_3year <- city_day_agg_cleaned %>%
+  filter(year(date) < 2020)
+# entries 150,563
+
+city_day_agg_cleaned_2020 <- city_day_agg_cleaned %>%
+  filter(year(date) == 2020)
+
+#by country
+country_day_agg_cleaned_3year <- country_day_agg_cleaned %>%
+  filter(year(date) < 2020)
+
+country_day_agg_cleaned_2020 <- country_day_agg_cleaned %>%
+  filter(year(date) == 2020)
+
+```
+
+# Calculating the mean Pm2.5 by city 
+
+```{r, cleaning by city}
+
+# this groups by country, then groups by month, then finds the average for that country for that month across all years 2017, 2018, 2019
+# note: grouping by countryCode first to fix the issue where multiple countries use the same city_id
+avg_3year_by_city <- city_day_agg_cleaned_3year %>% 
+  select('countryCode', 'city_id', 'date', 'mean') %>% 
+  group_by(countryCode, city_id, month(date)) %>% 
+  mutate(mean_3year = mean(mean, na.rm = TRUE)) %>%
+  select('city_id', 'month(date)', 'mean_3year') #  entries 150,563 -> entries are consistent with original data frame
+
+
+avg_2020_by_city <- city_day_agg_cleaned_2020 %>% 
+  select('countryCode', 'city_id', 'date', 'mean') %>% 
+  group_by(countryCode, city_id, month(date)) %>% 
+  mutate(mean_2020 = mean(mean, na.rm = TRUE)) %>%
+  select('city_id', 'month(date)', 'mean_2020') # entries 102,554 -> entries are consistent with original data frame
+  
+
+#checking if both data sets have the same cities
+length(unique(avg_2020_by_city$city_id)) #[1] 854
+
+length(unique(avg_3year_by_city$city_id)) # [1] 899
+
+# removing cities that are present in one and not the other data set 
+# issues here is that perhaps 
+common_cities <- intersect(avg_2020_by_city$city_id, avg_3year_by_city$city_id)
+
+# dropping cities in both data sets that are not common to both data sets
+avg_2020_by_city <- avg_2020_by_city %>%
+  filter(city_id %in% common_cities)
+
+avg_3year_by_city <- avg_3year_by_city %>%
+  filter(city_id %in% common_cities)
+
+length(unique(avg_2020_by_city$city_id)) #[1] 762
+
+length(unique(avg_3year_by_city$city_id)) # [1] 762
+
+# Final check complete 6/23/23
+# All mergers and filtering is consistent and clean
+
+```
+
+# Plotting the mean PM2.5 results (by city)
+
+```{r, plot figure 1 by city average}
+
+ggplot() +
+  geom_density(data = avg_3year_by_city, aes(x = mean_3year, fill = "mean_3year"), color = "turquoise", alpha = 0.8) +
+  geom_vline(data = avg_3year_by_city, aes(xintercept = median(mean_3year)), color = "turquoise", linetype = "solid") +
+  geom_density(data = avg_2020_by_city, aes(x = mean_2020, fill = "mean_2020"), color = "pink", alpha = 0.8) +
+  geom_vline(data = avg_2020_by_city, aes(xintercept = median(mean_2020)), color = "pink", linetype = "solid") +
+  xlab("PM2.5 micrograms/m3") +
+  ylab("Density") +
+  scale_x_continuous(breaks = seq(0, 125, 25)) +
+  coord_cartesian(xlim = c(0, 125)) + 
+  scale_fill_manual(values = c("mean_3year" = "turquoise", "mean_2020" = "pink"),
+                    labels = c("2020", "3year"),
+                    guide = guide_legend(title = "Legend"))
+
+```
+Observation: we see the same bump in the 2020 data but the 3 year data peaks higher than it does in the paper 
+
+
+# Calculating the World Map of mean %change (by City)
+
+```{r, calculate percent change pre/post 2020}
+
+#merge datasets on countryCode, city_id, and month(date)
+
+# dropping duplicate rows to prevent the many to many merger
+avg_3year_by_city_no_dups <- distinct(avg_3year_by_city) # entries 3625
+
+avg_2020_by_city_no_dups <- distinct(avg_2020_by_city) # entries 3685
+
+#now trying to merge to test many to many issue
+percent_change_pm25 <- inner_join(avg_3year_by_city_no_dups, avg_2020_by_city_no_dups, by =  c('countryCode', 'city_id', 'month(date)')) # entires 3499 No many to many issue here!
+
+#calculate percent change and add the column
+percent_change_pm25 <- percent_change_pm25 %>% mutate(percent_change = (((mean_2020 - mean_3year)/mean_3year)*100)) # entires 3499
+
+#merging the lat/lon data frame in
+percent_change_pm25 <- left_join(percent_change_pm25, openaq_cities, by = c('countryCode', 'city_id')) # entires 3499
+
+# Final Check 6/23/23
+# all mergers consistent and clean 
+```
+
+# Plotting the World Map of mean %change (by City)
+
+
+```{r, plot the world map showing percent change}
+
+world_map <- map_data("world")
+
+ggplot(world_map) +
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "white", color = "black") +
+  geom_point(data = percent_change_pm25, aes(x = Lon, y = Lat, color = percent_change),
+             shape = 1, size = 2, fill = "white") +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  theme_minimal() +
+  scale_color_gradient2(low = "darkorchid4", mid = "white", high = "brown3", limits = c(-50, 50))
+
+# try using pmax(pmin(percent_change, 50), -50) will force the scale to convert anything higher than 50 to 50 and lower than -50 to -50
+
+
+```
+
+
+
+
+
+# Modeling benchmark data for 2020 to compare against observed data
+
+In this section we are attempting to replicate two countries (USA and Switzerland)
+from Figure 3B of the paper, which compares the relative change between the modeled benchmark and the actual 2020 observations 
+
+```{r modeling usa, echo=FALSE}
+df_in2020_ornot <- country_day_agg_cleaned %>%
+  mutate(in2020=date>"2019-12-31",mon=month(as.Date(date),label=TRUE),wkd=weekdays(as.Date(date)))%>%
+  mutate(is_weekend=wkd %in% c("Saturday","Sunday"))
+
+#usa data in2020
+df2020_usa <- df_in2020_ornot%>%
+  filter(in2020==TRUE,countryCode=="USA")%>%
+  filter(date>="2020-03-15")%>%
+  drop_na()%>%
+  group_by(parameter,mon,is_weekend)%>%
+  summarize(mean=mean(mean,na.rm = TRUE))
+
+#usa data before 2020
+df_b420_usa <- df_in2020_ornot%>%
+  filter(in2020==FALSE,countryCode=="USA")%>%
+  filter(mon %in% c("Mar","Apr","May"))%>%
+  drop_na()%>%
+  group_by(parameter,mon,is_weekend)%>%
+  summarize(mean=mean(mean,na.rm = TRUE))
+
+#modeling usa
+model_usa <- lm(mean~parameter+mon+is_weekend,df_b420_usa)
+
+#rmse(model_usa,df_b420_usa)
+df_b420_usa%>%
+  add_predictions(model_usa)%>%
+  group_by(parameter)%>%
+  summarize(rmse=sqrt(mean((pred-mean)^2)),
+            cor=cor(pred,mean),
+            cor_sq=cor^2)
+```
+
+```{r modeling switzerland, echo=FALSE}
+#sw data in2020
+df2020_sw <- df_in2020_ornot%>%
+  filter(in2020==TRUE,countryCode=="CHE")%>%
+  filter(date>="2020-03-16")%>%
+  drop_na()%>%
+  group_by(parameter,mon,is_weekend)%>%
+  summarize(mean=mean(mean,na.rm = TRUE))
+
+#sw data before 2020
+df_b420_sw <- df_in2020_ornot%>%
+  filter(in2020==FALSE,countryCode=="CHE")%>%
+  filter(mon %in% c("Mar","Apr","May"))%>%
+  drop_na()%>%
+  group_by(parameter,mon,is_weekend)%>%
+  summarize(mean=mean(mean,na.rm = TRUE))
+
+#modeling usa
+model_sw <-lm(mean~parameter+mon+is_weekend,df_b420_sw)
+df_b420_sw%>%
+  add_predictions(model_sw)%>%
+  group_by(parameter)%>%
+  summarize(rmse=sqrt(mean((pred-mean)^2)),
+            cor=cor(pred,mean),
+            cor_sq=cor^2)
+
+```
+
+```{r modeling, echo=FALSE}
+#compare modeling data (benchmark) with actual data (observed)
+usa_chg <- df2020_usa%>%
+  add_predictions(model_usa)%>%
+  mutate(per_chg=(mean-pred)/mean*100)%>%
+  group_by(parameter)%>%
+  summarize(chg=mean(per_chg),se=sd(per_chg)/sqrt(length(per_chg)))%>%
+  mutate(country="USA")
+
+sw_chg <- df2020_sw%>%
+  add_predictions(model_sw)%>%
+  mutate(per_chg=(mean-pred)/mean*100)%>%
+  group_by(parameter)%>%
+  summarize(chg=mean(per_chg),se=sd(per_chg)/sqrt(length(per_chg)))%>%
+  mutate(country="CHE")
+
+rbind(usa_chg,sw_chg)%>%
+  ggplot(aes(x=chg,y=country))+
+  geom_point(aes(color=chg>0))+
+  facet_wrap(~parameter)+
+  geom_pointrange(aes(y=country,xmin=chg-se,xmax=chg+se))+
+  geom_vline(xintercept = 0,linetype="dotted")+
+  scale_x_continuous(limits=c(-150,100))
+  
+  
+```
