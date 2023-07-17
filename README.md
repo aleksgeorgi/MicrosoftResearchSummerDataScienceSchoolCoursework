@@ -46,4 +46,4 @@ Figure 3B - Relative Change, Our Recreation:
 
 ### Task 2 Results:
 
-Our model did not account for weather patterns or other more complex features, however we were able to project relative change figures on the correct side of the scale. Our confidnece interval for the US was the greatest difference.
+Our model did not account for weather patterns or other more complex features that were factored into the authors models for calcuating the benchmark data, so our relative change varied a lot from the original figure.
