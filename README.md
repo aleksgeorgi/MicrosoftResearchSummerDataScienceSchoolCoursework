@@ -15,7 +15,7 @@ This is the repository for Microsoft Research NYC's 2023 Data Science Summer Sch
 
 Our goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day.
 
-**Task 1: Using the data from the study, recreate the density plot and world map for PM2.5**
+<u>Task 1 Description:</u> Using the data from the study, recreate the density plot and world map for PM2.5
 
 Figure 1C - Paper Figure:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/Paper-WorldMap.png" alt="Figure 1C - World Map and Density" />
@@ -26,9 +26,13 @@ Figure 1C - Density Plot, Our Recreation:
 Figure 1C - Wold Map, Our Recreation:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/WoldMap.png" alt="WorldMap" />
 
-### Results
+<u>Task 1 Results:</u> Results from each group were slightly varied, yet no group replicated the paper's figures. The findings were opposite than that of the paper's claim.
 
-Results from each group were mixed however most groups
+The median value of PM2.5 for 2020 was actually higher than that of the 3 years prior. This could be due to a bug in the author's code. It was discovered that the figure was built on limited data. Instead of factoring the second, third, and fourth months of the year (the lock down months), the authors used the second, third, and fouth days of the year.
+
+The world map also varied from that of the author's because our map was built using granular city data. It wasn't clear what data the authors used to produce the world map figure.
+
+### Results
 
 1. Start by reading the paper. Focus on the bottom panel of Figure 1 (density plot inset, then the map). These will be the main results to replicate in the paper. Time permitting we will try to replicate the right panel of Figure 3B with a simplified model as well.
 
