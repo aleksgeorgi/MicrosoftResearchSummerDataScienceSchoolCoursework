@@ -13,9 +13,9 @@ This is the repository for Microsoft Research NYC's 2023 Data Science Summer Sch
 
 ### Description:
 
-Goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day.
+Our goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day.
 
-Task 1: Using the data from the study, recreate the density plot and world map for PM2.5
+**Task 1: Using the data from the study, recreate the density plot and world map for PM2.5**
 
 Figure 1C - Paper Figure:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/Paper-WorldMap.png" alt="Figure 1C - World Map and Density" />
