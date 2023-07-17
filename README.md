@@ -11,7 +11,7 @@ This is the repository for Microsoft Research NYC's 2023 Data Science Summer Sch
 
 ## Final Project
 
-Our goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day. The repo for the authors can be found [here] (https://github.com/NINAnor/covid19-air-pollution)
+Our goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day. The repo for the authors can be found [here](https://github.com/NINAnor/covid19-air-pollution)
 
 ### Task 1 Description:
 
