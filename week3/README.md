@@ -1,3 +1,5 @@
+# Week 3 Instructions
+
 This week starts with a discussion of modeling and machine learning, and then involves several assignments on reproducing the results of published research papers.
 
 # Day 1
@@ -14,36 +16,35 @@ Spend the afternoon finishing up [last week's assignment on regression](../week2
 
 We discussed regression with multiple features, non-linear features, and interactions between features.
 
-  * See if you can reproduce the table in ISRS 5.29 using the original dataset in [body.dat.txt](body.dat.txt), taken from [here](http://jse.amstat.org/v11n2/datasets.heinz.html)
-  * Do Labs 3.6.3 through 3.6.6 of [Intro to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/) to get practice with linear models in R
-  * Read Sections 6.1 through 6.3 of ISRS on regression with multiple features
-  * Do Exercises 6.1, 6.2, and 6.3, and use the original data set in [babyweights.txt](babyweights.txt), taken from [here](https://web.archive.org/web/20040906234424/http://www.ma.hw.ac.uk/~stan/aod/library/babies.dat.txt), to reproduce the results from the book
+- See if you can reproduce the table in ISRS 5.29 using the original dataset in [body.dat.txt](body.dat.txt), taken from [here](http://jse.amstat.org/v11n2/datasets.heinz.html)
+- Do Labs 3.6.3 through 3.6.6 of [Intro to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/) to get practice with linear models in R
+- Read Sections 6.1 through 6.3 of ISRS on regression with multiple features
+- Do Exercises 6.1, 6.2, and 6.3, and use the original data set in [babyweights.txt](babyweights.txt), taken from [here](https://web.archive.org/web/20040906234424/http://www.ma.hw.ac.uk/~stan/aod/library/babies.dat.txt), to reproduce the results from the book
 
 # Day 3
 
 ## Overfitting, generalization, and model complexity
 
-  * See the notebook on [model evaluation](../week2/model_evaluation.ipynb)
-  * See the [slides](https://speakerdeck.com/jhofman/modeling-social-data-lecture-8-regression-part-2) and [notebook](complexity_control.ipynb) on overfitting and cross-validation
-  * Read section 5.1 of [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/) on cross-validation and do labs 5.3.1, 5.3.2, and 5.3.3
+- See the notebook on [model evaluation](../week2/model_evaluation.ipynb)
+- See the [slides](https://speakerdeck.com/jhofman/modeling-social-data-lecture-8-regression-part-2) and [notebook](complexity_control.ipynb) on overfitting and cross-validation
+- Read section 5.1 of [An Introduction to Statistical Learning](http://www-bcf.usc.edu/~gareth/ISL/) on cross-validation and do labs 5.3.1, 5.3.2, and 5.3.3
 
 # Day 4
 
 ## The long tail
 
-* Take a look at [The Anatomy of the Long Tail](https://5harad.com/papers/long_tail.pdf) and think about how to generate Figures 1 and 2 (you can ignore the null model in Figure 2)
-* Use the [download_movielens.sh](download_movielens.sh) script to download the [MovieLens data](http://grouplens.org/datasets/movielens/)
-* Fill in code in the [movielens.Rmd](movielens.Rmd) file to reproduce plots from lecture slides and Figures 1 and 2 from the paper
-
+- Take a look at [The Anatomy of the Long Tail](https://5harad.com/papers/long_tail.pdf) and think about how to generate Figures 1 and 2 (you can ignore the null model in Figure 2)
+- Use the [download_movielens.sh](download_movielens.sh) script to download the [MovieLens data](http://grouplens.org/datasets/movielens/)
+- Fill in code in the [movielens.Rmd](movielens.Rmd) file to reproduce plots from lecture slides and Figures 1 and 2 from the paper
 
 # Day 5
 
 ## N-gram data and "Culturonomics"
 
-* Replicate and extend the results of the [Google n-grams "culturomics" paper](https://science.sciencemag.org/content/331/6014/176) ([pdf](https://pdodds.w3.uvm.edu/research/papers/others/2011/michel2011a.pdf)) using the template [here](ngrams/)
-* Consider the last bit of this exercise on creating a Makefile "extra credit", here are some references for using GNU Make / Makefiles:
-  * [Why Use Make?](https://bost.ocks.org/mike/make/) by Mike Bostock
-  * [GNU Make for Reproducible Data Analysis](http://zmjones.com/make/) by Zach Jones
+- Replicate and extend the results of the [Google n-grams "culturomics" paper](https://science.sciencemag.org/content/331/6014/176) ([pdf](https://pdodds.w3.uvm.edu/research/papers/others/2011/michel2011a.pdf)) using the template [here](ngrams/)
+- Consider the last bit of this exercise on creating a Makefile "extra credit", here are some references for using GNU Make / Makefiles:
+  - [Why Use Make?](https://bost.ocks.org/mike/make/) by Mike Bostock
+  - [GNU Make for Reproducible Data Analysis](http://zmjones.com/make/) by Zach Jones
 
 <!--
 
