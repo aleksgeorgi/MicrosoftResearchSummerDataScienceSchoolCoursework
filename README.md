@@ -1,49 +1,55 @@
-# MSR NYC Data Science Summer School 2023
+# Microsoft Research Data Science Summer School (DS3) - Final Project Overview
 
-This is the repository for Microsoft Research NYC's 2023 Data Science Summer School (DS3). More information on the program is available [here](http://ds3.research.microsoft.com).
+**Title:** Challenging Air Quality Claims: A COVID-19 Lockdown Case Study (Summer 2023)
 
-## Coursework breakdown
+## Introduction
 
-- [Week 1](week1/): Pre-requisites and background
-- [Week 2](week2/): Core curriculum
-- [Week 3](week3/): Extended assignments
-- [Week 4](week4/): Projects
+During the last week of a four-week fellowship with Microsoft Research, my partner and I were tasked with replicating and critically analyzing a published [study on air pollution levels before and after the COVID-19 lockdown](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1). Utilizing R for data analysis, our task was to validate the study's findings and explore potential discrepancies. We presented our findings on the last day. The repo for the original study can be found [here](https://github.com/NINAnor/covid19-air-pollution).
 
-## Final Project
+## Project Goals and Methodology
 
-Our goal was to replicate the findings of [this article](https://www.pnas.org/doi/10.1073/pnas.2006853117#sec-1) on air quality during the COVID-10 lockdowns. We worked in pairs on this project, and then presented our findings on the last day. The repo for the authors can be found [here](https://github.com/NINAnor/covid19-air-pollution)
+### Objective
 
-### Task 1 Description:
+Our primary goal was to replicate the original study's findings on air quality changes during COVID-19 lockdowns. This involved rigorous data analysis and visualizations to confirm or contest the published results.
 
-Using the data from the study, recreate the density plot and world map for PM2.5
+### Task Breakdown
+
+- **Task 1:** Reproduce the density plot and world map for PM2.5 using the dataset from the study.
+- **Task 2:** Replicate the relative change panel of Figure 3B from the study, and build a simplified model for benchmark data based on lockdown months from the three years prior to 2020.
+
+## Results and Findings
+
+### Task 1 Outcomes
+
+- Our recreated density plot revealed a discrepancy. Contrary to the study's claim, the median PM2.5 value for 2020 was higher than in the previous three years.
+- The inconsistency was traced to a bug in the original study's code. The authors had erroneously used data from only the first three days of the year, rather than the lockdown months.
+- The world map we generated, using detailed city data, also differed significantly from the study's version, raising questions about the data sources and methods used by the original authors.
 
 Figure 1C - Paper Figure:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/Paper-WorldMap.png" alt="Figure 1C - World Map and Density" />
 
-Figure 1C - Density Plot, Our Recreation:
+Figure 1C - Our Recreation, Density Plot:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/DensityPlot.png" alt="DensityPlot" />
 
-Figure 1C - Wold Map, Our Recreation:
+Figure 1C - Our Recreation, Wold Map:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/WoldMap.png" alt="WorldMap" />
 
-### Task 1 Results:
+### Task 2 Outcomes
 
-Results from each group were slightly varied, yet no group replicated the paper's figures. The findings were opposite than that of the paper's claim.
-
-The median value of PM2.5 for 2020 was actually higher than that of the 3 years prior. This could be due to a bug in the author's code. It was discovered that the figure was built on limited data. Instead of factoring the second, third, and fourth months of the year (the lock down months), the authors used the second, third, and fouth days of the year.
-
-The world map also varied from that of the author's because our map was built using granular city data. It wasn't clear what data the authors used to produce the world map figure.
-
-### Task 2 Description:
-
-Replicate the relative change panel of Figure 3B. Build a simplified model trained on the lockdown months for the 3 years prior to 2020 to create the benchmark data.
+- Our simplified model, which did not account for complex variables like weather patterns, showed a considerable variance from the original study's relative change figures.
 
 Figure 3B - Paper Figure:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/Paper_Figure3B.png" alt="Relative Change" />
 
-Figure 3B - Relative Change, Our Recreation:
+Figure 3B - Our Recreation, Relative Change:
 <img style="margin: 10px; max-height: 550px; width: auto; @media (max-width: 550px) { max-height: 100%; width: auto; }" src="https://github.com/aleksgeorgi/MicrosoftResearchSummerDataScienceSchoolCoursework/blob/master/week4/Images/RelativeChange.png" alt="Relative Change" />
 
-### Task 2 Results:
+## Impact and Recognition
 
-Our model did not account for weather patterns or other more complex features that were factored into the authors models for calcuating the benchmark data, so our relative change varied a lot from the original figure.
+Our analysis uncovered critical errors in the original study, leading to [a formal correction](https://www.pnas.org/doi/10.1073/pnas.2320514120) by the authors and recognition of our contribution in 'The Proceedings of the National Academy of Sciences' (PNAS). This project not only highlights our analytical skills and attention to detail but also underscores the importance of data integrity in scientific research.
+
+## Summary
+
+This project was a profound learning experience in data analysis, critical thinking, and collaboration. Working alongside Microsoft Research scientists, we demonstrated that meticulous data analysis could have a significant impact on the scientific community and public understanding.
+
+More information on the Data Science Summer School fellowship is available [here](http://ds3.research.microsoft.com).
